@@ -128,4 +128,4 @@ public class AttendanceController {
         attendanceService.deleteAttendance(id, currentUser);
         return ResponseEntity.noContent().build();
     }
-}
+} 
