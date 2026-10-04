@@ -1,0 +1,2 @@
+package com.smartwashpro.model.enums;
+public enum NotificationType { ORDER_UPDATE, PAYMENT_UPDATE, PICKUP_SCHEDULED, LOW_INVENTORY, EQUIPMENT_ALERT, COMPLAINT_UPDATE, GENERAL }

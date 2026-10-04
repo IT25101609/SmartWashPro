@@ -1,0 +1,38 @@
+# ========================
+# SmartWash Pro .gitignore
+# ========================
+
+# Environment
+.env
+.env.local
+.env.production
+
+# ---- Java / Maven ----
+backend/target/
+backend/*.class
+backend/*.jar
+backend/*.war
+*.log
+
+# Maven wrapper
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# ---- Node / React ----
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# ---- IDEs ----
+.idea/
+*.iml
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+desktop.ini
