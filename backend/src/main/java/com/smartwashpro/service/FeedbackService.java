@@ -9,6 +9,7 @@ import com.smartwashpro.model.Feedback;
 import com.smartwashpro.model.Order;
 import com.smartwashpro.model.User;
 import com.smartwashpro.model.enums.FeedbackStatus;
+import com.smartwashpro.model.enums.OrderStatus;
 import com.smartwashpro.model.enums.Role;
 import com.smartwashpro.repository.CustomerRepository;
 import com.smartwashpro.repository.FeedbackRepository;
@@ -58,7 +59,8 @@ public class FeedbackService {
                 );
 
         // Find customer profile
-        Customer customer = customerRepository.findByUserId(user.getId())
+        Customer customer = customerRepository
+                .findByUserId(user.getId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Customer profile not found for user: "
@@ -85,7 +87,7 @@ public class FeedbackService {
         // =====================================================
         // RATING VALIDATION
         // =====================================================
-        // getRating() is int, therefore DO NOT compare with null.
+        // getRating() is int, therefore no null check is used.
 
         if (request.getRating() < 1
                 || request.getRating() > 5) {
@@ -111,13 +113,26 @@ public class FeedbackService {
         // FIND ORDER
         // =====================================================
 
-        Order order = orderRepository.findById(request.getOrderId())
+        Order order = orderRepository
+                .findById(request.getOrderId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Order",
                                 request.getOrderId()
                         )
                 );
+
+        // =====================================================
+        // ORDER STATUS VALIDATION
+        // =====================================================
+        // Feedback is allowed only for completed/delivered orders.
+
+        if (order.getOrderStatus() != OrderStatus.DELIVERED) {
+
+            throw new IllegalArgumentException(
+                    "Feedback can only be submitted for delivered orders."
+            );
+        }
 
         // =====================================================
         // CUSTOMER OWNERSHIP VALIDATION
@@ -138,7 +153,8 @@ public class FeedbackService {
         // DUPLICATE FEEDBACK VALIDATION
         // =====================================================
 
-        boolean alreadySubmitted = feedbackRepository.findAll()
+        boolean alreadySubmitted = feedbackRepository
+                .findAll()
                 .stream()
                 .anyMatch(existingFeedback ->
                         existingFeedback.getOrder() != null
@@ -149,6 +165,7 @@ public class FeedbackService {
                 );
 
         if (alreadySubmitted) {
+
             throw new IllegalArgumentException(
                     "Feedback has already been submitted for this order."
             );
@@ -168,11 +185,15 @@ public class FeedbackService {
                 .status(FeedbackStatus.PUBLISHED)
                 .build();
 
-        // Save
+        // =====================================================
+        // SAVE TO DATABASE
+        // =====================================================
+
         feedback = feedbackRepository.save(feedback);
 
         return mapToResponse(feedback);
     }
+
 
     // =========================================================
     // GET ALL FEEDBACK
@@ -187,6 +208,7 @@ public class FeedbackService {
                 .map(this::mapToResponse);
     }
 
+
     // =========================================================
     // GET MY FEEDBACK
     // =========================================================
@@ -196,7 +218,8 @@ public class FeedbackService {
             Pageable pageable
     ) {
 
-        User user = userRepository.findByEmail(userEmail)
+        User user = userRepository
+                .findByEmail(userEmail)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "User not found: " + userEmail
@@ -217,13 +240,15 @@ public class FeedbackService {
                 .map(this::mapToResponse);
     }
 
+
     // =========================================================
     // GET FEEDBACK BY ID
     // =========================================================
 
     public FeedbackResponse getFeedbackById(Long id) {
 
-        Feedback feedback = feedbackRepository.findById(id)
+        Feedback feedback = feedbackRepository
+                .findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Feedback",
@@ -233,6 +258,7 @@ public class FeedbackService {
 
         return mapToResponse(feedback);
     }
+
 
     // =========================================================
     // UPDATE FEEDBACK
@@ -245,7 +271,8 @@ public class FeedbackService {
             String userEmail
     ) {
 
-        Feedback feedback = feedbackRepository.findById(id)
+        Feedback feedback = feedbackRepository
+                .findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Feedback",
@@ -253,7 +280,8 @@ public class FeedbackService {
                         )
                 );
 
-        User user = userRepository.findByEmail(userEmail)
+        User user = userRepository
+                .findByEmail(userEmail)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "User not found: " + userEmail
@@ -289,7 +317,6 @@ public class FeedbackService {
         // =====================================================
         // RATING VALIDATION
         // =====================================================
-        // getRating() is int, so only range validation is needed.
 
         if (request.getRating() < 1
                 || request.getRating() > 5) {
@@ -312,7 +339,7 @@ public class FeedbackService {
         }
 
         // =====================================================
-        // UPDATE
+        // UPDATE FEEDBACK
         // =====================================================
 
         feedback.setRating(request.getRating());
@@ -321,14 +348,14 @@ public class FeedbackService {
                 request.getFeedbackText().trim()
         );
 
-        // IMPORTANT:
-        // Existing feedback stays connected to its original order.
-        // Customer cannot change the order during an edit.
+        // The original Order ID remains unchanged.
+        // Customer cannot move feedback to another order.
 
         feedback = feedbackRepository.save(feedback);
 
         return mapToResponse(feedback);
     }
+
 
     // =========================================================
     // DELETE FEEDBACK
@@ -340,7 +367,8 @@ public class FeedbackService {
             String userEmail
     ) {
 
-        Feedback feedback = feedbackRepository.findById(id)
+        Feedback feedback = feedbackRepository
+                .findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Feedback",
@@ -348,7 +376,8 @@ public class FeedbackService {
                         )
                 );
 
-        User user = userRepository.findByEmail(userEmail)
+        User user = userRepository
+                .findByEmail(userEmail)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "User not found: " + userEmail
@@ -388,8 +417,9 @@ public class FeedbackService {
         feedbackRepository.delete(feedback);
     }
 
+
     // =========================================================
-    // MAP ENTITY TO RESPONSE
+    // MAP ENTITY → RESPONSE
     // =========================================================
 
     private FeedbackResponse mapToResponse(
@@ -410,8 +440,8 @@ public class FeedbackService {
                         feedback.getCustomer() != null
                                 && feedback.getCustomer().getUser() != null
                                 ? feedback.getCustomer()
-                                .getUser()
-                                .getFullName()
+                                    .getUser()
+                                    .getFullName()
                                 : "Customer"
                 )
 
