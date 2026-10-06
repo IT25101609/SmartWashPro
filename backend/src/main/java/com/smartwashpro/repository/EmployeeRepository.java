@@ -30,7 +30,6 @@ public interface EmployeeRepository
         extends JpaRepository<Employee, Long> {
 
 
-    // Custom query used to filter employees
     // based on branch, employment status, role and search text
     @Query("SELECT e FROM Employee e JOIN e.user u WHERE " +
 
@@ -161,8 +160,6 @@ public interface EmployeeRepository
     );
 
 
-    // Finds employees whose role is included in a collection
-    // and who have the specified employment status
     List<Employee> findByRoleInAndEmploymentStatus(
             Collection<String> roles,
             EmploymentStatus status
@@ -173,8 +170,6 @@ public interface EmployeeRepository
     long countByBranchId(Long branchId);
 
 
-    // Counts employees based on employment status
-    // Example: ACTIVE, INACTIVE
     long countByEmploymentStatus(
             EmploymentStatus status
     );
