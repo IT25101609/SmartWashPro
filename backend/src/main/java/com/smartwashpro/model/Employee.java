@@ -8,16 +8,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
-// Marks this class as a JPA entity.
 // This class will be mapped to a database table.
 @Entity
 
 // Specifies the database table name as "employees"
 @Table(name = "employees")
 public class Employee {
-
-    // Primary key of the Employee table
-    @Id
 
     // Automatically generates the ID value
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,14 +28,10 @@ public class Employee {
     private User user;
 
 
-    // Stores the employee's job role
-    // nullable = false means this value cannot be NULL
     @Column(name = "role", nullable = false)
     private String role;
 
 
-    // Stores the employee's employment status
-    // EnumType.STRING stores values such as ACTIVE, INACTIVE as text
     @Enumerated(EnumType.STRING)
     private EmploymentStatus employmentStatus = EmploymentStatus.ACTIVE;
 
@@ -207,14 +199,12 @@ public class Employee {
     }
 
 
-    // Starts the Builder pattern
     // Allows us to create Employee objects step-by-step
     public static Builder builder() {
         return new Builder();
     }
 
 
-    // Builder class is used to create Employee objects
     // without using a long constructor
     public static class Builder {
 
